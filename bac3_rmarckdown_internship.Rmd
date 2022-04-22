@@ -1,0 +1,464 @@
+---
+title: "Bac2 bioinformatic introduction"
+author: "Dugauquier Rémy"
+date: "4/19/2022"
+output: html_document
+---
+
+# Introduction
+
+Into this document you can find all Rcommand line to compute some analyzes of the internship.
+
+# Packages installation
+
+```{r}
+install.packages("writexl")
+
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("Gviz")
+
+```
+
+# Packages importation
+
+```{r}
+library(stringr)
+library(seqinr)
+library(writexl)
+library(ggplot2)
+library(readxl)
+library(readr)
+library(dplyr)
+library(Gviz)
+```
+
+# Analyse of correct contigs
+
+The goal of this part is to create a table with all our gene id sequences, with their contig id and then compute a plot of the number of genes by contigs.
+
+So we need to create this kind of table
+
+| gene ID | contig ID |
+-----------------------
+| gene A  | contig A  |
+| gene B  | contig A  |
+| gene C  | contig B  |
+
+To do that we are going to use the contig ID of the correct one's that we filtered previously, and also the gene gene.
+
+For this first part we are going to import our fasta file with all the gene id with the seqnir function and compute a table with the gene name, the length, and the sequences.
+
+```{r}
+# importation of sequence
+
+all_gene_sequence_path <- "/Users/remydugauquier/pCloud\ Drive/thesis/intership_bac_3/bac3_internship_gene_sequences.fna"
+
+read.fasta(all_gene_sequence_path,as.string = TRUE,forceDNAtolower = FALSE) -> all_sequence
+
+# creation of a little for loop to extract each sequences
+
+# this loop take sequence by sequence, extract the name and information and paste them into a table
+
+for(i in seq(from=1, to=length(all_sequence), by=1)){
+  
+  # at the first round of the loop (when i = 1, we are going to create the result table)
+  
+  if(i == 1) {
+    #We just create a dataframe to put all sequence with name
+    sequence_table <- data.frame(sequence_name = "",
+                                 sequence = "",
+                                 length = "",
+                                 annotation="",
+                                 stringsAsFactors=FALSE)
+    sequence_table <- sequence_table[-c(1),]
+  }
+  # We extract one sequence
+  all_sequence[i] -> one_sequence
+  # Extraction of sequence name with the function that extract the attribute (so the name) of the sequence
+  attributes(one_sequence) -> one_seq_name
+  one_seq_name$names -> one_seq_name
+  # We put the sequence name into the table, into the first column
+  one_seq_name -> sequence_table[i,1]
+  # We add the annotation
+  getAnnot(one_sequence) -> one_seq_annot
+  one_seq_annot[[1]][1] -> sequence_table[i,4]
+  # Now we need to add the sequence
+  one_sequence[[1]][1]-> sequence_table[i,2]
+  # And finally we want to add the length of the genes
+  # we simply use the command nchar which able to count the number of character of a string, here count the number of nucleotide
+  nchar(sequence_table[i,2]) -> sequence_table[i,3]
+} 
+```
+
+Now we have our table almost done. We just need to add the contig id, the start position and the stop position.
+
+So contig Id is the first part of the gene id. So we are going to extract this part from the gene id and create the variable contig id.
+
+In R we can use the function str_split_fixed to split a name according to a letter/word/... 
+
+```{r}
+
+str_split_fixed(sequence_table$sequence_name, "_", 6) -> sequence_table[,c(5:10)]
+
+paste(sequence_table$V5,sequence_table$V6,
+      sequence_table$V7,sequence_table$V8,
+      sequence_table$V9,sep="_") -> sequence_table$contig_id
+
+sequence_table[,-c(5:10)] -> sequence_table
+```
+
+For start, stop and strand, we can use the same way.
+But it's faster to use regular expression.
+
+```{r}
+
+str_extract_all(sequence_table$annotation,"(?<=start:).+(?=stop:)")-> sequence_table$start
+str_extract_all(sequence_table$annotation,"(?<=stop:).+(?=length:)")-> sequence_table$stop
+str_extract_all(sequence_table$annotation,"(?<=strand:).+(?=start:)")-> sequence_table$strand
+
+# we put it as numeric
+
+as.numeric(sequence_table$start) -> sequence_table$start
+as.numeric(sequence_table$stop) -> sequence_table$stop
+as.character(sequence_table$strand) -> sequence_table$strand
+
+```
+
+
+Now we have got our table, we just finish to filter it to keep only the correct contig, so the one's that we filter according to the size of contigs.
+
+To do that we can import the contig id file, and filter the name according to our file.
+
+```{r}
+# we import the contig sequences files
+
+all_correct_contig_path <- "/Users/remydugauquier/pCloud\ Drive/thesis/intership_bac_3/correct_contig_sequences.fasta"
+
+read.fasta(all_correct_contig_path,as.string = TRUE,forceDNAtolower = FALSE) -> all_contig
+
+# then we extract all the name
+attributes(all_contig) -> all_contig_name
+
+all_contig_name$names -> all_contig_name
+
+# and we use the function subset to keep only correct contig into our table
+
+subset(sequence_table, sequence_table$contig_id %in% all_contig_name) -> correct_sequence_table
+
+```
+
+So we had 670 sequences and now 634 sequences.
+
+We can register the table for later.
+
+```{r}
+
+write_xlsx(correct_sequence_table,"/Users/remydugauquier/pCloud\ Drive/thesis/intership_bac_3/correct_sequence_table.xlsx")
+
+```
+
+To finish the analyze of correct contigs, we are going to compute a little plot to see all contigs and the number of genes that they contains.
+
+```{r}
+# we start by using table function to count the number of occurence of each contig
+
+table(correct_sequence_table$contig_id) -> table_for_plot
+as.data.frame(table_for_plot) -> table_for_plot
+names(table_for_plot)[1] <- "contig_id"
+names(table_for_plot)[2] <- "number_of_gene"
+
+# now we create a barplot
+
+ggplot(table_for_plot, aes(x = contig_id, y = number_of_gene))+
+  geom_col(fill = "#0073C2FF")+
+  geom_text(aes(label = number_of_gene), color = "black")+
+  ggtitle("Number of genes by contigs (<1500 pb)")+
+  xlab("Contigs ID")+
+  ylab("Number of genes")+
+  theme(axis.text.x = element_text(angle=90))
+
+```
+
+
+# Prophage prediction
+
+Now we have our sequence table and also our prophage prediction. So we'll filter this table according to the prophage or not.
+
+We start by import prophage table.
+
+```{r}
+library(readr)
+final_viral_score <- read_delim("~/pCloud Drive/thesis/intership_bac_3/bac3_contig_prophage_result.out/final-viral-score.tsv", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+library(readxl)
+correct_sequence_table <- read_excel("~/pCloud Drive/thesis/intership_bac_3/correct_sequence_table.xlsx")
+
+```
+
+
+The first sequence is our contig, but the name is not correct. So we re-use split function to discard ||full.
+
+```{r}
+#
+```
+
+Then we want only the best prediction. According to our knowledge, the best score is 0.8.
+
+So we need to subset the score.
+
+```{r}
+
+```
+
+These contig are the one's detected as prophage, so we add a new column name by "prophage" into our correct_sequence_table. Then we filter our table according to this column to create an other table prophage_sequence_table that we save as excel.
+
+To add the new column we can do a for loop again.
+
+```{r}
+# first I create a new column name prophage and I put FLASE in all row
+correct_sequence_table$prophage <- FALSE
+
+# then with a for loop, I take row by row, and if our contig id is find into the virsorter result table, I change the FALSE in TRUE
+for(i in seq(from=1, to=nrow(correct_sequence_table), by=1)){
+  if(correct_sequence_table[i,5] %in% unique(final_viral_score$seqname)){
+    correct_sequence_table[i,9] <- TRUE
+  }
+}
+
+# I filter my table according to the prophage column and I save it as excel
+
+subset(correct_sequence_table, correct_sequence_table$prophage %in% TRUE) -> prophage_sequence_table
+
+write_xlsx(prophage_sequence_table,"/Users/remydugauquier/pCloud\ Drive/thesis/intership_bac_3/prophage_sequence_table.xlsx")
+```
+
+To finish, we are going to re-plot this table but change the color according to prophage or not.
+
+```{r}
+table(correct_sequence_table$contig_id) -> table_for_plot
+as.data.frame(table_for_plot) -> table_for_plot
+names(table_for_plot)[1] <- "contig_id"
+names(table_for_plot)[2] <- "number_of_gene"
+
+table_for_plot$prophage <- FALSE
+
+for(i in seq(from=1, to=nrow(table_for_plot), by=1)){
+  if(table_for_plot[i,1] %in% unique(final_viral_score$seqname)){
+    table_for_plot[i,3] <- TRUE
+  }
+}
+
+ggplot(table_for_plot, aes(x = contig_id, y = number_of_gene,fill=prophage))+
+  geom_bar(stat = "identity")+
+  geom_text(aes(label = number_of_gene), color = "black")+
+  ggtitle("Number of genes by contigs (<1500 pb)")+
+  xlab("Contigs ID")+
+  ylab("Number of genes")+
+  theme(axis.text.x = element_text(angle=90))+scale_fill_manual(values=c( "#E69F00", "#56B4E9"))
+```
+
+What can we observe ? 
+
+# Functionnal prediction preparation of aa sequence
+
+For the functionnal prediction of gene with PFAM, we need to use as input our gene sequence from prophage in aa format.
+
+So we need to create a fasta file with these protein sequences.
+
+First we are going to translate our sequence from our table. To translate we can re-use the package seqinr and see if we can find some useful function with it.
+
+We are going to create again a for loop, to take sequence by sequence, translate it and save it into a fasta file
+
+```{r}
+
+prophage_sequence_table <- read_excel("~/pCloud Drive/thesis/intership_bac_3/prophage_sequence_table.xlsx")
+
+prophage_sequence_table$aa_sequence <- ""
+
+# this loop take sequence by sequence, translate it and save it into fasta file
+
+for(i in seq(from=1, to=nrow(prophage_sequence_table), by=1)){
+  
+  # we add a print to see the progression
+  
+  print(paste("Sequence in translation nb : ",i,sep=""))
+  
+  # We extract one sequence
+  
+  prophage_sequence_table[i,2] -> one_sequence
+  
+  # we put it in minuscule (necessary for translate function)
+  
+  str_to_lower(one_sequence) -> seq_to_trslt
+
+  # we translate it into aa
+  
+  s2c(seq_to_trslt) -> seq_to_trslt
+  translate(seq = seq_to_trslt) -> seq_to_trslt
+  
+  # we concat all aa into a sequence
+
+  paste(seq_to_trslt,collapse = "") ->  prophage_sequence_table[i,10]
+  
+  # we save it into a fasta file
+  # we give simply the sequence first, then the name of the sequence, the path of the file, and open = a to say to avoid create a new file at each time
+  write.fasta(prophage_sequence_table[i,10],prophage_sequence_table[i,1],"~/pCloud Drive/thesis/intership_bac_3/prophage_protein_seq.fasta" , open = "a", nbchar = 60, as.string = FALSE)
+
+
+
+} 
+
+# I save again my excel table
+
+write_xlsx(prophage_sequence_table,"/Users/remydugauquier/pCloud\ Drive/thesis/intership_bac_3/prophage_sequence_table.xlsx")
+
+```
+
+
+# Functionnal prediction analyze of results
+
+With HMMsearch and the PFAM-A database we annotated the function of each genes. 
+So we are going to add these function into our table, to reveal the unknown genes.
+
+```{r}
+prophage_sequence_table <- read_excel("~/pCloud Drive/thesis/intership_bac_3/prophage_sequence_table.xlsx")
+
+
+prophage_pfam_result_TAB <- read.table("~/pCloud Drive/thesis/intership_bac_3/prophage_pfam_result_TAB.txt", quote="\"")
+
+# we select column and rename correctly the columns name
+
+prophage_pfam_result_TAB[,c(1,3,4,5,6,7)] -> prophage_pfam_result_TAB
+
+colnames(prophage_pfam_result_TAB) = c("target_name","query_name","query_accession","Evalue_full_seq" ,"score_full_seq","bias_full_seq") 
+
+```
+
+We can't use directly all prediction because some can be very bad prediction.
+
+We need to use two values to filter the table (according to Hmmsearch documentation) :
+
+  - evalue
+  - score
+  
+A good prediction need to have :
+  - an evalue lower than 1e-3
+  - a bias score lower than the half of the score
+
+So now we subset our table with these parameters
+
+```{r}
+
+
+```
+
+How many different genes we have with a function?
+What the percentage of genes from our contigs with a function?
+
+```{r}
+
+
+```
+
+It seems that some genes have several identification, so we keep the best by using evalue and score.
+
+```{r}
+prophage_pfam_result_TAB_filter %>%
+  group_by(target_name) %>%
+  top_n(-1,Evalue_full_seq )-> prophage_pfam_result_TAB_filter
+
+# we check if we have got only one identification by genes
+
+length(unique(prophage_pfam_result_TAB_filter$target_name))
+
+```
+
+Now we can merge our table to add these identification
+
+```{r}
+# we change the name of the column to have a common column between the two table
+
+names(prophage_pfam_result_TAB_filter)[1] <- "sequence_name"
+
+merge(prophage_sequence_table, prophage_pfam_result_TAB_filter, by="sequence_name",all.x=TRUE) -> prophage_sequence_table
+
+# and we save the table
+
+write_xlsx(prophage_sequence_table,"/Users/remydugauquier/pCloud\ Drive/thesis/intership_bac_3/prophage_sequence_table.xlsx")
+
+```
+
+
+# Contig figure
+
+
+```{r}
+prophage_sequence_table <- read_excel("~/pCloud Drive/thesis/intership_bac_3/prophage_sequence_table.xlsx")
+
+
+```
+
+Before the creation of figure, we can check how many different contigs we have.
+
+
+```{r}
+length(unique(prophage_sequence_table$contig_id))
+```
+
+
+We are going to compute a for loop where we assign a color by genes (green if functionnal prediction and red if unknown genes). This loop take contig by contig and compute the figure with Gviz package
+
+
+```{r}
+# first I create a vector with all the contig
+
+unique(prophage_sequence_table$contig_id) -> all_contig
+
+for(i in seq(from=1, to=length(all_contig),by=1)){
+  
+  # I filter the first contig
+  print(i)
+  subset(prophage_sequence_table,prophage_sequence_table$contig_id %in% all_contig[i])-> local_contig
+
+  # I change color according to functionnal identification
+  local_contig$color <- "#85C17E"
+  local_contig$color[is.na(local_contig$query_accession)] <- "#B82010"
+  
+  # I add an id for the figure
+  
+  local_contig$gene_order <- rownames(local_contig)
+  
+  # cwith GRanges we create the back of figure
+  ref <- GRanges('candidate_id', IRanges(min(local_contig$start), max(local_contig$stop)))
+  ref_track <- GenomeAxisTrack(ref, lwd=4, fontsize=20)
+  
+  # and then the function to compute arrow according to strand, length, color
+  
+  local_contig_g <- with(local_contig, GRanges(contig_id, IRanges(start, stop), strand,id=gene_order, fill=color))
+  options(ucscChromosomeNames=FALSE)
+  local_contig_track <- AnnotationTrack(local_contig_g,
+                                        name = unique(local_contig$contig_id)
+                                        , width = 25, showFeatureId = T
+                                        , min.height=15
+                                        , stacking="dense"
+                                        , showFeatureId=TRUE
+                                        ,id = local_contig_g$id
+                                        , fill=local_contig_g$fill)
+  
+
+  
+  png(file=paste("~/pCloud Drive/thesis/intership_bac_3/figure/",unique(local_contig$contig_id),"_figure.png", sep=""),width=1360, height=220)
+  plotTracks(c(ref_track, local_contig_track),title.width = 0.5) -> plot_fig
+  dev.off()
+
+}
+
+```
+
+
+
+
+

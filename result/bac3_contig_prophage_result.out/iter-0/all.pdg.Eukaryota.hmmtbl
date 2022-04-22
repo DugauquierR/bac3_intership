@@ -1,0 +1,17 @@
+#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
+# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target
+#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------
+TARA_X000001036_G_C20658286_1||rbs:common_4 -          EF-hand_1            PF00036.32   3.5e-18   59.2   6.0   1.2e-05   20.1   0.3   4.2   2   2   2   4   4   4   4 # 1697 # 2170 # -1 # ID=42_4;partial=01;start_type=Edge;rbs_motif=None;rbs_spacer=None;gc_cont=0.468
+TARA_X000001036_G_C20658286_1||rbs:common_4 -          EF-hand_6            PF13405.6    3.9e-16   53.1   2.2   2.3e-06   22.6   0.1   4.3   3   1   1   4   4   4   4 # 1697 # 2170 # -1 # ID=42_4;partial=01;start_type=Edge;rbs_motif=None;rbs_spacer=None;gc_cont=0.468
+TARA_X000001036_G_C20658286_1||rbs:common_4 -          EF-hand_7            PF13499.6    2.4e-14   48.9   3.3   1.8e-06   23.7   1.8   4.2   2   1   2   4   4   4   4 # 1697 # 2170 # -1 # ID=42_4;partial=01;start_type=Edge;rbs_motif=None;rbs_spacer=None;gc_cont=0.468
+TARA_X000001036_G_C20658286_1||rbs:common_4 -          EF-hand_8            PF13833.6    2.4e-12   41.9   1.4    0.0013   14.0   0.1   4.2   4   0   0   4   4   4   4 # 1697 # 2170 # -1 # ID=42_4;partial=01;start_type=Edge;rbs_motif=None;rbs_spacer=None;gc_cont=0.468
+#
+# Program:         hmmsearch
+# Version:         3.3.2 (Nov 2020)
+# Pipeline mode:   SEARCH
+# Query file:      /home/rdugauqu/db/hmm/pfam/Pfam-A-Eukaryota.hmm
+# Target file:     /tmp/vs2-94HUMkMH7yqR/all.pdg.faa.0.split
+# Option settings: hmmsearch --tblout iter-0/all.pdg.faa.splitdir/all.pdg.faa.0.split.Eukaryota.splithmmtbl --noali -T 30 --cpu 2 /home/rdugauqu/db/hmm/pfam/Pfam-A-Eukaryota.hmm /tmp/vs2-94HUMkMH7yqR/all.pdg.faa.0.split 
+# Current dir:     /home/rdugauqu/bac3_contig_prophage_result.out
+# Date:            Wed Apr 20 09:25:30 2022
+# [ok]

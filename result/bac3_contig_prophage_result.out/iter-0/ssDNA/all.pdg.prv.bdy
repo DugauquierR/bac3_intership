@@ -1,0 +1,17 @@
+seqname	trim_orf_index_start	trim_orf_index_end	trim_bp_start	trim_bp_end	trim_pr	trim_pr_max	prox_orf_index_start	prox_orf_index_end	prox_bp_start	prox_bp_end	prox_pr	prox_pr_max	partial	full_orf_index_start	full_orf_index_end	full_bp_start	full_bp_end	pr_full	arc	bac	euk	vir	mix	unaligned	hallmark_cnt
+TARA_A100001201_G_scaffold13531_3||rbs:common	1	6	1	5208	0.927	0.927	1	6	1	5208	nan	nan	0	1	6	1	5208	0.927	0.0	0.0	0.0	100.0	0.0	0.0	0
+TARA_B100000424_G_scaffold245063_1||rbs:common	1	3	24	1640	0.820	0.820	1	3	24	1640	nan	nan	0	1	3	24	1640	0.820	0.0	0.0	0.0	66.7	0.0	33.3	0
+TARA_B100000497_G_C7677801_1||rbs:common	1	4	3	2327	0.900	0.900	1	4	3	2327	nan	nan	0	1	4	3	2327	0.900	0.0	0.0	0.0	75.0	0.0	25.0	0
+TARA_B100000497_G_C7677813_1||rbs:common	1	4	39	2328	0.953	0.953	1	4	39	2328	nan	nan	0	1	4	39	2328	0.953	0.0	0.0	0.0	50.0	0.0	50.0	0
+TARA_B100000497_G_C7677823_1||rbs:common	1	4	1	2328	0.687	0.687	1	4	1	2328	nan	nan	0	1	4	1	2328	0.687	0.0	0.0	0.0	50.0	0.0	50.0	0
+TARA_B100000497_G_C7677825_1||rbs:common	1	5	1	1992	0.987	0.987	1	5	1	1992	nan	nan	0	1	5	1	1992	0.987	0.0	0.0	0.0	100.0	0.0	0.0	0
+TARA_B100000497_G_C7677837_1||rbs:common	1	3	1	2331	0.827	0.827	1	3	1	2331	nan	nan	0	1	3	1	2331	0.827	0.0	0.0	0.0	100.0	0.0	0.0	0
+TARA_B100000902_G_scaffold328401_1||rbs:common	1	4	2	2651	1.000	1.000	1	4	2	2651	nan	nan	0	1	4	2	2651	1.000	0.0	0.0	0.0	100.0	0.0	0.0	0
+TARA_B100001059_G_scaffold233718_1||rbs:common	1	3	1	1588	0.900	0.900	1	3	1	1588	nan	nan	0	1	3	1	1588	0.900	0.0	0.0	0.0	33.3	0.0	66.7	0
+TARA_B110000858_G_scaffold37238_1||rbs:common	1	4	1	1981	0.940	0.940	1	4	1	1981	nan	nan	0	1	4	1	1981	0.940	0.0	0.0	0.0	50.0	0.0	50.0	0
+TARA_B110000908_G_scaffold38417_1||rbs:common	1	5	1	2825	1.000	1.000	1	5	1	2825	nan	nan	0	1	5	1	2825	1.000	0.0	0.0	0.0	60.0	0.0	40.0	0
+TARA_R100000030_G_scaffold86336_1||rbs:common	1	4	1	2238	0.953	0.953	1	4	1	2238	nan	nan	0	1	4	1	2238	0.953	0.0	0.0	0.0	25.0	0.0	75.0	0
+TARA_S200002703_G_scaffold145415_1||rbs:common	1	4	3	2300	0.947	0.947	1	4	3	2300	nan	nan	0	1	4	3	2300	0.947	0.0	0.0	0.0	50.0	0.0	50.0	0
+TARA_X000000368_G_scaffold3782_1||rbs:common	1	3	3	1696	0.993	0.993	1	3	3	1696	nan	nan	0	1	3	3	1696	0.993	0.0	0.0	0.0	66.7	0.0	33.3	0
+TARA_X000000368_G_scaffold84958_3||rbs:common	1	6	3	2414	0.953	0.953	1	6	3	2414	nan	nan	0	1	6	3	2414	0.953	0.0	0.0	0.0	83.3	0.0	16.7	0
+TARA_X000001382_G_scaffold130850_1||rbs:common	1	5	126	3322	0.900	0.900	1	5	126	3322	nan	nan	0	1	5	126	3322	0.900	0.0	0.0	0.0	100.0	0.0	0.0	0
